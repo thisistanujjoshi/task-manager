@@ -5,6 +5,80 @@
   text-align: left;
 }
 
+.app-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.app-header h1 {
+  margin: 0;
+}
+
+.who {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: var(--text);
+}
+
+.auth {
+  max-width: 320px;
+  margin: 80px auto;
+  padding: 0 16px;
+  text-align: left;
+}
+
+.auth form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.auth input {
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--bg);
+  color: var(--text-h);
+  font: inherit;
+}
+
+.auth button[type="submit"] {
+  padding: 8px 14px;
+  border-radius: 6px;
+  border: 1px solid var(--accent-border);
+  background: var(--accent-bg);
+  color: var(--accent);
+  cursor: pointer;
+  margin-top: 4px;
+}
+
+.auth .hint {
+  font-size: 13px;
+  color: var(--text);
+  margin: 0;
+}
+
+.link {
+  border: none;
+  background: none;
+  color: var(--accent);
+  cursor: pointer;
+  padding: 0;
+  font: inherit;
+  text-decoration: underline;
+}
+
+.auth > .link {
+  display: inline-block;
+  margin-top: 16px;
+  font-size: 14px;
+}
+
 .search,
 .create {
   display: flex;
