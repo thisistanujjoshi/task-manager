@@ -32,6 +32,24 @@ cp .env.example .env   # points the frontend at the backend URL
 npm run dev   # http://localhost:5173
 ```
 
+## Deployment
+
+Backend on [Render](https://render.com) (via `render.yaml`), frontend on [Vercel](https://vercel.com).
+They're on different domains, so the auth cookie is `SameSite=None; Secure` in production
+(vs. `Lax` locally) — see `backend/src/routes/auth.ts`.
+
+**Backend (Render):** New → Blueprint → select this repo → it reads `render.yaml`
+(root dir `backend`, build/start commands, and a free auto-generated `JWT_SECRET`).
+Set `FRONTEND_ORIGIN` to the deployed Vercel URL once you have it.
+
+**Frontend (Vercel):** New Project → import this repo → set **Root Directory** to
+`frontend` → add env var `VITE_API_URL` = the deployed Render URL → deploy.
+`VITE_API_URL` is baked in at build time, so redeploy the frontend if this changes.
+
+**Known limitation:** Render's free tier disk is ephemeral — the SQLite file resets
+on redeploy/restart. Fine for a portfolio demo; a real deployment would use a
+persistent disk (Render paid tier) or a hosted database.
+
 ## Project structure
 
 ```

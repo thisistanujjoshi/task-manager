@@ -6,10 +6,17 @@ import { requireAuth, type AuthedRequest } from "../auth/middleware.js";
 
 export const authRouter = Router();
 
+const isProduction = process.env.NODE_ENV === "production";
+
+// In production the frontend and backend are on different domains
+// (e.g. Vercel + Render), so the cookie must be SameSite=None to be
+// sent on cross-site fetches — which in turn requires Secure. Locally
+// everything is same-site (both on localhost), so Lax + non-Secure
+// works over plain http.
 const COOKIE_OPTIONS = {
   httpOnly: true,
-  sameSite: "lax" as const,
-  secure: process.env.NODE_ENV === "production",
+  sameSite: (isProduction ? "none" : "lax") as "none" | "lax",
+  secure: isProduction,
   maxAge: 7 * 24 * 60 * 60 * 1000,
 };
 
