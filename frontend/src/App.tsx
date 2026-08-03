@@ -1,122 +1,123 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
-import './App.css'
+import { useEffect, useState, type FormEvent } from "react";
+import { api, type Task } from "./api";
+import "./App.css";
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [tasks, setTasks] = useState<Task[]>([]);
+  const [search, setSearch] = useState("");
+  const [title, setTitle] = useState("");
+  const [tags, setTags] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  async function refresh(currentSearch: string) {
+    try {
+      setError(null);
+      setTasks(await api.listTasks(currentSearch));
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Failed to load tasks");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    refresh(search);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  async function handleSearch(e: FormEvent) {
+    e.preventDefault();
+    await refresh(search);
+  }
+
+  async function handleCreate(e: FormEvent) {
+    e.preventDefault();
+    if (!title.trim()) return;
+
+    try {
+      await api.createTask(title, tags);
+      setTitle("");
+      setTags("");
+      await refresh(search);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Failed to create task");
+    }
+  }
+
+  async function toggleDone(task: Task) {
+    try {
+      await api.updateTask(task.id, { done: task.done ? false : true });
+      await refresh(search);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Failed to update task");
+    }
+  }
+
+  async function handleDelete(id: number) {
+    try {
+      await api.deleteTask(id);
+      await refresh(search);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Failed to delete task");
+    }
+  }
 
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.tsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
+    <div className="app">
+      <h1>Task Manager</h1>
 
-      <div className="ticks"></div>
+      <form className="search" onSubmit={handleSearch}>
+        <input
+          placeholder="Search by title or tag..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+        />
+        <button type="submit">Search</button>
+      </form>
 
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
+      <form className="create" onSubmit={handleCreate}>
+        <input
+          placeholder="New task title"
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+        />
+        <input
+          placeholder="tags (comma separated)"
+          value={tags}
+          onChange={(e) => setTags(e.target.value)}
+        />
+        <button type="submit">Add</button>
+      </form>
 
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
-  )
+      {error && <p className="error">{error}</p>}
+
+      {loading ? (
+        <p>Loading...</p>
+      ) : tasks.length === 0 ? (
+        <p className="empty">No tasks yet.</p>
+      ) : (
+        <ul className="tasks">
+          {tasks.map((task) => (
+            <li key={task.id} className={task.done ? "done" : ""}>
+              <label>
+                <input
+                  type="checkbox"
+                  checked={!!task.done}
+                  onChange={() => toggleDone(task)}
+                />
+                <span className="title">{task.title}</span>
+              </label>
+              {task.tags && <span className="tags">{task.tags}</span>}
+              <button className="delete" onClick={() => handleDelete(task.id)}>
+                &times;
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
 }
 
-export default App
+export default App;

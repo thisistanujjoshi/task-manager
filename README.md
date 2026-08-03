@@ -4,7 +4,7 @@ A full-stack task/notes manager with tagging and search, built as a learning pro
 
 ## Stack
 
-- **Backend:** Node.js, Express, TypeScript, SQLite (`better-sqlite3`)
+- **Backend:** Node.js, Express, TypeScript, SQLite (Node's built-in `node:sqlite`)
 - **Frontend:** React, TypeScript, Vite
 
 ## Why these choices
@@ -25,6 +25,7 @@ npm run dev   # http://localhost:4000
 ```
 cd frontend
 npm install
+cp .env.example .env   # points the frontend at the backend URL
 npm run dev   # http://localhost:5173
 ```
 
@@ -39,6 +40,6 @@ DEVLOG.md   Running log of changes, decisions, and issues hit while building thi
 ## Status
 
 - [x] Backend scaffolding + CRUD API for tasks (create, list/search, update, delete)
-- [ ] Frontend UI wired up to the API
+- [x] Frontend UI wired up to the API (list, search, create, toggle done, delete)
 - [ ] Auth (login/signup)
 - [ ] Deploy
